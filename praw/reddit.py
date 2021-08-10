@@ -23,6 +23,7 @@ from warnings import warn
 from prawcore import (
     Authorizer,
     DeviceIDAuthorizer,
+    LocalWSGIServerAuthorizer,
     ReadOnlyAuthorizer,
     Redirect,
     Requestor,
@@ -442,6 +443,13 @@ class Reddit:
         elif self.config.refresh_token:
             authorizer = Authorizer(
                 authenticator, refresh_token=self.config.refresh_token
+            )
+        elif "local_client_scopes" in self.config.custom and (
+            self.config.redirect_uri.startswith("http://localhost")
+            or self.config.redirect_uri.startswith("http://127.0.0.1")
+        ):
+            authorizer = LocalWSGIServerAuthorizer(
+                authenticator, self.config.custom["local_client_scopes"].split(" ")
             )
         else:
             self._core = self._read_only_core
